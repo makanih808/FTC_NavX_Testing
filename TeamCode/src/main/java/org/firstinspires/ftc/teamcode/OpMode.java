@@ -28,15 +28,19 @@ public class OpMode extends Robot {
         if (opModeIsActive() && !isStopRequested()) {
             while (opModeIsActive() && !isStopRequested()) {
                 driver(driver);
-                telemetry();
+
+                // Telemetry
+                MotorTelemetry();
+                telemetry.update();
             }
         }
     }
 
     private void driver(Gamepad driver) {
-        float forward = -driver.left_stick_y;
-        float strafe = driver.left_stick_x;
-        float rotate = driver.right_stick_x;
+        double rotate = driver.right_stick_x * .5;
+        double stickLimit = Math.sqrt(Math.pow(1-Math.abs(rotate), 2)/2);
+        double forward = -driver.left_stick_y * stickLimit;
+        double strafe = driver.left_stick_x * stickLimit;
 
         double gyroAngle = heading();
 
@@ -55,23 +59,19 @@ public class OpMode extends Robot {
             gyroAngle = -Math.PI/2;
         }
 
-        double theta = Math.atan2(forward, strafe);
-        double r = Math.hypot(forward, strafe);
-        theta = AngleUnit.normalizeRadians(theta - gyroAngle);
+        double theta = Math.atan2(forward, strafe) - gyroAngle - (Math.PI / 2);
+        double magnitude = Math.hypot(forward, strafe);
+        double Px = magnitude * Math.sin(theta + Math.PI / 4);
+        double Py = magnitude * Math.sin(theta - Math.PI / 4);
 
-        double newForward = r * Math.sin(theta);
-        double newStrafe = r * Math.cos(theta);
-
-        drive(newForward, newStrafe, rotate);
+        fl.setPower(Py - rotate);
+        bl.setPower(Px - rotate);
+        br.setPower(Py + rotate);
+        fr.setPower(Px + rotate);
     }
 
     private double heading() {
-        IntegratingGyroscope gyro = (IntegratingGyroscope)ahrs;
-        Orientation orientation = gyro.getAngularOrientation(
-                AxesReference.INTRINSIC,
-                AxesOrder.ZYX,
-                AngleUnit.RADIANS);
-        double yaw = orientation.firstAngle;
+        double yaw = Math.toRadians(ahrs.getYaw());
 
         if (yaw < -Math.PI) {
             yaw += (2 * Math.PI);

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Hardware;
 import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,27 +20,36 @@ public abstract class Robot extends LinearOpMode {
 
     private DecimalFormat df = new DecimalFormat("#.##");
 
+    private InitSetup initSetup = new InitSetup();
+
     // Gets the components and also sets its default behavior
     protected void init(HardwareMap hwMap) {
-        // Gets the drive motors
-        fl = hwMap.get(DcMotorEx.class, Names.Motors.kFrontLeftName);
-        fr = hwMap.get(DcMotorEx.class, Names.Motors.kFrontRightName);
-        bl = hwMap.get(DcMotorEx.class, Names.Motors.kBackLeftName);
-        br = hwMap.get(DcMotorEx.class, Names.Motors.kBackRightName);
 
-        // Sets the motors to stop immediately when not given and input (a.k.a. goes against inertia)
-        // I personally recommend the motors to be set at BRAKE because I find it allows the drivers to have better control of the robot.
-        // I also find it easier to work with for autonomous.
-        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        // I'm using a GoBilda Strafer Chassis but set the motors to your configurations
-        fl.setDirection(DcMotorSimple.Direction.FORWARD);
-        fr.setDirection(DcMotorSimple.Direction.REVERSE);
-        bl.setDirection(DcMotorSimple.Direction.FORWARD);
-        br.setDirection(DcMotorSimple.Direction.FORWARD);
+        // Sets up the drive motors
+        initSetup.DcMotorExInit(
+                fl,
+                hwMap,
+                Names.Motors.kFrontRightName,
+                DcMotorEx.ZeroPowerBehavior.BRAKE,
+                DcMotorEx.Direction.FORWARD);
+        initSetup.DcMotorExInit(
+                fr,
+                hwMap,
+                Names.Motors.kFrontRightName,
+                DcMotorEx.ZeroPowerBehavior.BRAKE,
+                DcMotorEx.Direction.REVERSE);
+        initSetup.DcMotorExInit(
+                bl,
+                hwMap,
+                Names.Motors.kBackLeftName,
+                DcMotorEx.ZeroPowerBehavior.BRAKE,
+                DcMotorEx.Direction.FORWARD);
+        initSetup.DcMotorExInit(
+                br,
+                hwMap,
+                Names.Motors.kBackRightName,
+                DcMotorEx.ZeroPowerBehavior.BRAKE,
+                DcMotorEx.Direction.FORWARD);
 
         // Calls and sets the NavX Micro Sensor
         ahrs = AHRS.getInstance(
@@ -51,59 +59,23 @@ public abstract class Robot extends LinearOpMode {
         );
     }
 
-    private void setPower(//
-            double frontLeftPower,//
-            double frontRightPower,//
-            double backLeftPower,//
-            double backRightPower) {//
-
-        double maxSpeed = 1.0;
-        maxSpeed = Math.max(maxSpeed, Math.abs(frontLeftPower));
-        maxSpeed = Math.max(maxSpeed, Math.abs(frontRightPower));
-        maxSpeed = Math.max(maxSpeed, Math.abs(backLeftPower));
-        maxSpeed = Math.max(maxSpeed, Math.abs(backRightPower));
-
-        frontLeftPower /= maxSpeed;
-        frontRightPower /= maxSpeed;
-        backLeftPower /= maxSpeed;
-        backRightPower /= maxSpeed;
-
-        fl.setPower(frontLeftPower);
-        fr.setPower(frontRightPower);
-        bl.setPower(backLeftPower);
-        br.setPower(backRightPower);
-    }
-
-    public void drive(double forward, double strafe, double rotate) {//
-        double frontLeftPower = forward + strafe + rotate;
-        double frontRightPower = forward - strafe - rotate;
-        double backLeftPower = forward - strafe + rotate;
-        double backRightPower = forward + strafe - rotate;
-
-        setPower(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
-    }
-
+    /****************************************************************************************************************************************************/
 
     // Telemetry
     /****************************************************************************************************************************************************/
-    public void telemetry() {//
-        MotorTelemetry();
-        NavXTelemetry();
-        telemetry.update();
-    }
-
-    void MotorTelemetry() {//
+        public void MotorTelemetry() {//
+        // Telemetry for motor powers
+        telemetry.addLine("Drive Motor Power \n");
         telemetry.addData("Front Left Power", df.format(fl.getPower()));
         telemetry.addData("Front Right Power", df.format(fr.getPower()));
         telemetry.addData("Back Left Power", df.format(bl.getPower()));
         telemetry.addData("Back Right Power", df.format(br.getPower()));
+
+        //Telemetry for motor positions
+        telemetry.addLine("Drive Motor Positions \n");
         telemetry.addData("Front Left Position", df.format(fl.getCurrentPosition()));
         telemetry.addData("Front Right Position", df.format(fr.getCurrentPosition()));
         telemetry.addData("Back Left Position", df.format(bl.getCurrentPosition()));
         telemetry.addData("Back Right Position", df.format(br.getCurrentPosition()));
-    }
-
-    void NavXTelemetry() {//
-        telemetry.addData("Yaw", df.format(ahrs.getYaw()));
     }
 }
