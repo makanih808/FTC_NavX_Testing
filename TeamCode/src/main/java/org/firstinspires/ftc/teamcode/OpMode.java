@@ -31,6 +31,7 @@ public class OpMode extends Robot {
 
                 // Telemetry
                 MotorTelemetry();
+                telemetry.addData("Theta", heading());
                 telemetry.update();
             }
         }
@@ -40,7 +41,7 @@ public class OpMode extends Robot {
         double rotate = driver.right_stick_x * .5;
         double stickLimit = Math.sqrt(Math.pow(1-Math.abs(rotate), 2)/2);
         double forward = -driver.left_stick_y * stickLimit;
-        double strafe = driver.left_stick_x * stickLimit;
+        double strafe = -driver.left_stick_x * stickLimit;
 
         double gyroAngle = heading();
 
@@ -55,19 +56,23 @@ public class OpMode extends Robot {
         }
         gyroAngle *= -1;
 
-        if(gamepad1.right_bumper){ //Disables gyro, sets to -Math.PI/2 so front is defined correctly.
-            gyroAngle = -Math.PI/2;
-        }
+        if(gamepad1.right_bumper) gyroAngle = -Math.PI/2;
+        //Disables gyro, sets to -Math.PI/2 so front is defined correctly.
 
         double theta = Math.atan2(forward, strafe) - gyroAngle - (Math.PI / 2);
         double magnitude = Math.hypot(forward, strafe);
         double Px = magnitude * Math.sin(theta + Math.PI / 4);
         double Py = magnitude * Math.sin(theta - Math.PI / 4);
 
-        fl.setPower(Py - rotate);
-        bl.setPower(Px - rotate);
-        br.setPower(Py + rotate);
-        fr.setPower(Px + rotate);
+        double flPow = Py - rotate;
+        double blPow = Px - rotate;
+        double brPow = Py + rotate;
+        double frPow = Px + rotate;
+
+        fl.setPower(flPow * 1.5);
+        bl.setPower(blPow * 1.5);
+        br.setPower(brPow * 1.5);
+        fr.setPower(frPow * 1.5);
     }
 
     private double heading() {

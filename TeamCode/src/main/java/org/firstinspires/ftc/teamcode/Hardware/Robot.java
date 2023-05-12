@@ -4,7 +4,6 @@ import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Constants.Constants;
@@ -20,36 +19,25 @@ public abstract class Robot extends LinearOpMode {
 
     private DecimalFormat df = new DecimalFormat("#.##");
 
-    private InitSetup initSetup = new InitSetup();
-
     // Gets the components and also sets its default behavior
     protected void init(HardwareMap hwMap) {
 
         // Sets up the drive motors
-        initSetup.DcMotorExInit(
-                fl,
-                hwMap,
-                Names.Motors.kFrontRightName,
-                DcMotorEx.ZeroPowerBehavior.BRAKE,
-                DcMotorEx.Direction.FORWARD);
-        initSetup.DcMotorExInit(
-                fr,
-                hwMap,
-                Names.Motors.kFrontRightName,
-                DcMotorEx.ZeroPowerBehavior.BRAKE,
-                DcMotorEx.Direction.REVERSE);
-        initSetup.DcMotorExInit(
-                bl,
-                hwMap,
-                Names.Motors.kBackLeftName,
-                DcMotorEx.ZeroPowerBehavior.BRAKE,
-                DcMotorEx.Direction.FORWARD);
-        initSetup.DcMotorExInit(
-                br,
-                hwMap,
-                Names.Motors.kBackRightName,
-                DcMotorEx.ZeroPowerBehavior.BRAKE,
-                DcMotorEx.Direction.FORWARD);
+        fl = hwMap.get(DcMotorEx.class, Names.Motors.kFrontLeftName);
+        fr = hwMap.get(DcMotorEx.class, Names.Motors.kFrontRightName);
+        bl = hwMap.get(DcMotorEx.class, Names.Motors.kBackLeftName);
+        br = hwMap.get(DcMotorEx.class, Names.Motors.kBackRightName);
+
+        fl.setDirection(DcMotorEx.Direction.FORWARD);
+        fr.setDirection(DcMotorEx.Direction.REVERSE);
+        bl.setDirection(DcMotorEx.Direction.FORWARD);
+        br.setDirection(DcMotorEx.Direction.FORWARD);
+
+        fl.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
 
         // Calls and sets the NavX Micro Sensor
         ahrs = AHRS.getInstance(
@@ -59,23 +47,21 @@ public abstract class Robot extends LinearOpMode {
         );
     }
 
-    /****************************************************************************************************************************************************/
-
     // Telemetry
     /****************************************************************************************************************************************************/
         public void MotorTelemetry() {//
         // Telemetry for motor powers
-        telemetry.addLine("Drive Motor Power \n");
+        telemetry.addLine("Drive Motor Power");
         telemetry.addData("Front Left Power", df.format(fl.getPower()));
         telemetry.addData("Front Right Power", df.format(fr.getPower()));
         telemetry.addData("Back Left Power", df.format(bl.getPower()));
-        telemetry.addData("Back Right Power", df.format(br.getPower()));
+        telemetry.addData("Back Right Power", df.format(br.getPower()) + "\n");
 
         //Telemetry for motor positions
         telemetry.addLine("Drive Motor Positions \n");
         telemetry.addData("Front Left Position", df.format(fl.getCurrentPosition()));
         telemetry.addData("Front Right Position", df.format(fr.getCurrentPosition()));
         telemetry.addData("Back Left Position", df.format(bl.getCurrentPosition()));
-        telemetry.addData("Back Right Position", df.format(br.getCurrentPosition()));
+        telemetry.addData("Back Right Position", df.format(br.getCurrentPosition()) + "\n");
     }
 }
